@@ -10,6 +10,14 @@ public class CarController : MonoBehaviour
     private float currentSteerAngle;
     private float currentbreakForce;
     private bool isBreaking;
+    public int gear = 1;
+    private bool shiftUp;
+    private bool shiftDown;
+    public int nitro = 1000;
+    private bool useNitro;
+    private int nitroBoost = 1;
+    private float force = 1f;
+    private float realForce;
 
     [SerializeField] private float motorForce;
     [SerializeField] private float breakForce;
@@ -25,12 +33,16 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform rearLeftWheelTransform;
     [SerializeField] private Transform rearRightWheelTransform;
 
+    [SerializeField] private Rigidbody vehicle;
+
     private void FixedUpdate()
     {
         GetInput();
         Motor();
         Steering();
         UpdateWheels();
+        UpdateGear();
+        UpdateNitro();
     }
 
 
@@ -39,17 +51,196 @@ public class CarController : MonoBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
         isBreaking = Input.GetKey(KeyCode.Space);
+        shiftUp = Input.GetKeyDown(KeyCode.E);
+        shiftDown = Input.GetKeyDown(KeyCode.Q);
+        useNitro = Input.GetKey(KeyCode.LeftShift);
+    }
+
+    private void UpdateGear()
+    {
+        if (shiftUp == true)
+            if (gear < 6)
+                gear++;
+        if (shiftDown == true)
+            if (gear > 1)
+                gear--;
+        if (gear == 1)
+        {
+            realForce = motorForce / 10;
+        }
+        if (gear == 2)
+        {
+            realForce = motorForce / 10 + 600;
+        }
+        if (gear == 3)
+        {
+            realForce = motorForce / 10 + 600 * 2;
+        }
+        if (gear == 4)
+        {
+            realForce = motorForce / 10 + 600 * 3;
+        }
+        if (gear == 5)
+        {
+            realForce = motorForce / 10 + 600 * 4;
+        }
+        if (gear == 6)
+        {
+            realForce = motorForce / 10 + 600 * 5;
+        }
+    }
+
+    private void UpdateNitro()
+    {
+        if (useNitro == true)
+        {
+            if (nitro > 0)
+            {
+                nitroBoost = 3;
+                nitro--;
+            }
+            else
+            {
+                nitroBoost = 1;
+            }
+        }
+        else
+        {
+            nitroBoost = 1;
+        }
     }
 
     private void Motor()
     {
-        rearLeftWheelCollider.motorTorque = verticalInput * motorForce;
-        rearRightWheelCollider.motorTorque = verticalInput * motorForce;
+        //rearLeftWheelCollider.motorTorque = verticalInput * (motorForce + (rearLeftWheelCollider.rpm / 1000));
+        //rearRightWheelCollider.motorTorque = verticalInput * (motorForce + (rearRightWheelCollider.rpm / 1000));
+        // nlogn function or smth here?
+        //rearLeftWheelCollider.motorTorque = verticalInput * (Mathf.Log10(motorForce));
+        //rearRightWheelCollider.motorTorque = verticalInput * (Mathf.Log10(motorForce));
+
+        if (verticalInput < 0)
+            gear = 1;
+
+        if (verticalInput != 0) {
+            if (rearLeftWheelCollider.motorTorque < realForce)
+            {
+                rearLeftWheelCollider.motorTorque = verticalInput * (nitroBoost*gear*150 * Mathf.Log10(force));
+                rearRightWheelCollider.motorTorque = verticalInput * (nitroBoost*gear*150 * Mathf.Log10(force));
+                force += 1;
+            }
+        }
+
+        print(rearLeftWheelCollider.rpm);
+        //print(rearLeftWheelCollider.motorTorque);
         currentbreakForce = isBreaking ? breakForce : 0f;
         ApplyBreaking();
-        if (horizontalInput == 0 && isBreaking == false)
+        if (verticalInput == 0 && rearLeftWheelCollider.rpm > 10)
         {
-            currentbreakForce = 0.5f;
+            /*if (vehicle.velocity.magnitude > 3)
+            {
+                rearLeftWheelCollider.motorTorque = -2000f;
+                rearRightWheelCollider.motorTorque = -2000f;
+            }*/
+            rearLeftWheelCollider.motorTorque = 0f;
+            rearRightWheelCollider.motorTorque = 0f;
+        }
+        if (gear == 1)
+        {
+            if (rearLeftWheelCollider.rpm > 500)
+            {
+                rearLeftWheelCollider.motorTorque = rearLeftWheelCollider.motorTorque * (-1f);
+                rearRightWheelCollider.motorTorque = rearRightWheelCollider.motorTorque * (-1f);
+            }
+        }
+        else if (gear == 2)
+        {
+            if (rearLeftWheelCollider.rpm > 1400)
+            {
+                rearLeftWheelCollider.motorTorque = rearLeftWheelCollider.motorTorque * (-1f);
+                rearRightWheelCollider.motorTorque = rearRightWheelCollider.motorTorque * (-1f);
+            }
+            else if (rearLeftWheelCollider.rpm < 200)
+            {
+                rearLeftWheelCollider.motorTorque = 0f;
+                rearRightWheelCollider.motorTorque = 0f;
+            }
+            else if (rearLeftWheelCollider.rpm < 1100)
+            {
+                rearLeftWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+                rearRightWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+            }
+        }
+        else if(gear == 3)
+        {
+            if (rearLeftWheelCollider.rpm > 2300)
+            {
+                rearLeftWheelCollider.motorTorque = rearLeftWheelCollider.motorTorque * (-1f);
+                rearRightWheelCollider.motorTorque = rearRightWheelCollider.motorTorque * (-1f);
+            }
+            else if (rearLeftWheelCollider.rpm < 300)
+            {
+                rearLeftWheelCollider.motorTorque = 0f;
+                rearRightWheelCollider.motorTorque = 0f;
+            }
+            else if (rearLeftWheelCollider.rpm < 2000)
+            {
+                rearLeftWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+                rearRightWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+            }
+        }
+        else if (gear == 4)
+        {
+            if (rearLeftWheelCollider.rpm > 3200)
+            {
+                rearLeftWheelCollider.motorTorque = rearLeftWheelCollider.motorTorque * (-1f);
+                rearRightWheelCollider.motorTorque = rearRightWheelCollider.motorTorque * (-1f);
+            }
+            else if (rearLeftWheelCollider.rpm < 400)
+            {
+                rearLeftWheelCollider.motorTorque = 0f;
+                rearRightWheelCollider.motorTorque = 0f;
+            }
+            else if (rearLeftWheelCollider.rpm < 2900)
+            {
+                rearLeftWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+                rearRightWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+            }
+        }
+        else if(gear == 5)
+        {
+            if (rearLeftWheelCollider.rpm > 4100)
+            {
+                rearLeftWheelCollider.motorTorque = rearLeftWheelCollider.motorTorque * (-1f);
+                rearRightWheelCollider.motorTorque = rearRightWheelCollider.motorTorque * (-1f);
+            }
+            else if (rearLeftWheelCollider.rpm < 500)
+            {
+                rearLeftWheelCollider.motorTorque = 0f;
+                rearRightWheelCollider.motorTorque = 0f;
+            }
+            else if (rearLeftWheelCollider.rpm < 3800)
+            {
+                rearLeftWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+                rearRightWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+            }
+        }
+        else if (gear == 6)
+        {
+            if (rearLeftWheelCollider.rpm > 5000)
+            {
+                rearLeftWheelCollider.motorTorque = rearLeftWheelCollider.motorTorque * (-1f);
+                rearRightWheelCollider.motorTorque = rearRightWheelCollider.motorTorque * (-1f);
+            }
+            else if (rearLeftWheelCollider.rpm < 600)
+            {
+                rearLeftWheelCollider.motorTorque = 0f;
+                rearRightWheelCollider.motorTorque = 0f;
+            }
+            else if (rearLeftWheelCollider.rpm < 4700)
+            {
+                rearLeftWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+                rearRightWheelCollider.motorTorque = verticalInput * (nitroBoost * gear * 90 * Mathf.Log10(force));
+            }
         }
     }
 
