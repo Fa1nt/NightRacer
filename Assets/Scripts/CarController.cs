@@ -13,11 +13,12 @@ public class CarController : MonoBehaviour
     public int gear = 1;
     private bool shiftUp;
     private bool shiftDown;
-    public int nitro = 1000;
+    public int nitro = 500;
     private bool useNitro;
     private int nitroBoost = 1;
     private float force = 1f;
     private float realForce;
+    public int player = 1;
 
     [SerializeField] private float motorForce;
     [SerializeField] private float breakForce;
@@ -48,12 +49,24 @@ public class CarController : MonoBehaviour
 
     private void GetInput()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
-        isBreaking = Input.GetKey(KeyCode.Space);
-        shiftUp = Input.GetKeyDown(KeyCode.E);
-        shiftDown = Input.GetKeyDown(KeyCode.Q);
-        useNitro = Input.GetKey(KeyCode.LeftShift);
+        if (player == 1)
+        {
+            horizontalInput = Input.GetAxis("Horizontal");
+            verticalInput = Input.GetAxis("Vertical");
+            isBreaking = Input.GetKey(KeyCode.Space);
+            shiftUp = Input.GetKeyDown(KeyCode.E);
+            shiftDown = Input.GetKeyDown(KeyCode.Q);
+            useNitro = Input.GetKey(KeyCode.LeftShift);
+        }
+        else
+        {
+            horizontalInput = Input.GetAxis("Horizontal 2");
+            verticalInput = Input.GetAxis("Vertical 2");
+            isBreaking = Input.GetKey(KeyCode.M);
+            shiftUp = Input.GetKeyDown(KeyCode.O);
+            shiftDown = Input.GetKeyDown(KeyCode.U);
+            useNitro = Input.GetKey(KeyCode.N);
+        }
     }
 
     private void UpdateGear()
@@ -130,7 +143,7 @@ public class CarController : MonoBehaviour
             }
         }
 
-        print(rearLeftWheelCollider.rpm);
+        //print(rearLeftWheelCollider.rpm);
         //print(rearLeftWheelCollider.motorTorque);
         currentbreakForce = isBreaking ? breakForce : 0f;
         ApplyBreaking();
