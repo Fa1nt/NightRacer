@@ -47,7 +47,7 @@ public class CountdownController : MonoBehaviour
 
     IEnumerator CountdownToEnd()
     {
-        while (true)
+        while (GameObject.Find("FinishLine").GetComponent<FinishLine>().p1finish == false || GameObject.Find("FinishLine").GetComponent<FinishLine>().p2finish == false)
         {
             timerDisplay.text = countdownTime.ToString();
             yield return new WaitForSeconds(1f);

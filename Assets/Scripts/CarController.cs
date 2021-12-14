@@ -49,7 +49,7 @@ public class CarController : MonoBehaviour
 
     private void GetInput()
     {
-        if (player == 1)
+        if (player == 2)
         {
             horizontalInput = Input.GetAxis("Horizontal");
             verticalInput = Input.GetAxis("Vertical");
