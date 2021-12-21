@@ -46,26 +46,25 @@ public class CarController : MonoBehaviour
         UpdateNitro();
     }
 
-
     private void GetInput()
     {
         if (player == 2)
         {
             horizontalInput = Input.GetAxis("Horizontal");
-            verticalInput = Input.GetAxis("Vertical");
-            isBreaking = Input.GetKey(KeyCode.Space);
-            shiftUp = Input.GetKeyDown(KeyCode.E);
-            shiftDown = Input.GetKeyDown(KeyCode.Q);
-            useNitro = Input.GetKey(KeyCode.LeftShift);
+            verticalInput = Mathf.Clamp(Input.GetAxis("Vertical") + Input.GetAxis("Right Trigger 2") - Input.GetAxis("Left Trigger 2"), -1, 1);
+            isBreaking = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.Joystick2Button5);
+            shiftUp = Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Joystick2Button3);
+            shiftDown = Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.Joystick2Button2);
+            useNitro = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Joystick2Button4);
         }
         else
         {
             horizontalInput = Input.GetAxis("Horizontal 2");
-            verticalInput = Input.GetAxis("Vertical 2");
-            isBreaking = Input.GetKey(KeyCode.M);
-            shiftUp = Input.GetKeyDown(KeyCode.O);
-            shiftDown = Input.GetKeyDown(KeyCode.U);
-            useNitro = Input.GetKey(KeyCode.N);
+            verticalInput = Mathf.Clamp(Input.GetAxis("Vertical 2") + Input.GetAxis("Right Trigger") - Input.GetAxis("Left Trigger"), -1, 1);
+            isBreaking = Input.GetKey(KeyCode.M) || Input.GetKey(KeyCode.Joystick1Button5);
+            shiftUp = Input.GetKeyDown(KeyCode.O) || Input.GetKeyDown(KeyCode.Joystick1Button3);
+            shiftDown = Input.GetKeyDown(KeyCode.U) || Input.GetKeyDown(KeyCode.Joystick1Button2);
+            useNitro = Input.GetKey(KeyCode.N) || Input.GetKey(KeyCode.Joystick1Button4);
         }
     }
 
